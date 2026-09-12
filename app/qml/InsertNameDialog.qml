@@ -23,7 +23,9 @@ import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs
 
-Window {
+// ApplicationWindow (not Window) so the background follows the Fusion
+// palette like the other dialogs; a plain Window stays white in dark mode.
+ApplicationWindow {
     id: insertnamedialog
     width: 400
     height: 100
