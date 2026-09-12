@@ -127,6 +127,12 @@ QtObject {
     property alias fontName: fontManager.fontName
     property alias filteredFontList: fontManager.filteredFontList
 
+    // Name of the qmltermwidget color scheme (ANSI palette). The list of
+    // available names is only known by the terminal widget, which fills
+    // availableColorSchemes once it is created.
+    property string colorScheme: "cool-retro-term"
+    property var availableColorSchemes: []
+
     property FontManager fontManager: FontManager {
         id: fontManager
         baseFontScaling: baseFontScaling
@@ -196,6 +202,7 @@ QtObject {
             "fontSource": fontSource,
             "fontWidth": fontWidth,
             "lineSpacing": lineSpacing,
+            "colorScheme": colorScheme,
             "margin": _margin,
             "blinkingCursor": blinkingCursor,
             "frameSize": _frameSize,
@@ -301,6 +308,7 @@ QtObject {
         fontName = settings.fontName !== undefined ? settings.fontName : fontName
         fontWidth = settings.fontWidth !== undefined ? settings.fontWidth : fontWidth
         lineSpacing = settings.lineSpacing !== undefined ? settings.lineSpacing : lineSpacing
+        colorScheme = settings.colorScheme !== undefined ? settings.colorScheme : colorScheme
 
         _margin = settings.margin !== undefined ? settings.margin : _margin
         _frameSize = settings.frameSize !== undefined ? settings.frameSize : _frameSize

@@ -122,7 +122,7 @@ Item{
             Qt.openUrlExternally(url)
         }
 
-        colorScheme: "cool-retro-term"
+        colorScheme: appSettings.colorScheme
 
         session: QMLTermSession {
             id: ksession
@@ -192,6 +192,7 @@ Item{
             forceActiveFocus();
         }
         Component.onCompleted: {
+            appSettings.availableColorSchemes = kterminal.availableColorSchemes;
             appSettings.fontManager.terminalFontChanged.connect(handleFontChanged);
             appSettings.fontManager.refresh()
             startSession();

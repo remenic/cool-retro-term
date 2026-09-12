@@ -179,6 +179,21 @@ ColumnLayout {
         padding: appSettings.defaultMargin
         ColumnLayout {
             anchors.fill: parent
+            RowLayout {
+                Layout.fillWidth: true
+                Label {
+                    text: qsTr("Color Scheme")
+                }
+                ComboBox {
+                    id: colorSchemeChanger
+                    Layout.fillWidth: true
+                    model: appSettings.availableColorSchemes
+                    currentIndex: model.indexOf(appSettings.colorScheme)
+                    onActivated: function(index) {
+                        appSettings.colorScheme = model[index]
+                    }
+                }
+            }
             ColumnLayout {
                 Layout.fillWidth: true
                 CheckableSlider {
