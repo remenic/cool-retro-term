@@ -233,9 +233,8 @@ def main():
     order = font.getGlyphOrder()
     added = []
 
-    def install(codepoint, bottom_row, rows):
+    def install(codepoint, glyph):
         name = "uni%04X.pixel" % codepoint
-        glyph = build_glyph(font, bottom_row, rows)
         if name not in order:
             order.append(name)
         font["glyf"][name] = glyph
@@ -247,10 +246,10 @@ def main():
         has_own_glyph = codepoint in cmap and not cmap[codepoint].endswith(".pixel")
         if has_own_glyph:
             continue
-        install(codepoint, bottom_row, rows)
+        install(codepoint, build_glyph(font, bottom_row, rows))
 
     for codepoint, (bottom_row, rows) in REPLACEMENTS.items():
-        install(codepoint, bottom_row, rows)
+        install(codepoint, build_glyph(font, bottom_row, rows))
 
     for codepoint, target in ALIASES.items():
         if codepoint in cmap or target not in cmap:
