@@ -40,6 +40,15 @@ Loader {
     anchors.fill: parent
 
     function completelyUpdate() {
+        // While the window is being resized the layer texture is recreated on
+        // every grab. Grabbing it then either crashes (see #925/#937) or, when
+        // not recursive, samples the very texture it is rendering into, which
+        // shows up as purple garbage on Metal. So keep the stale texture during
+        // the resize and rebuild it once the size has settled (resizeTimer).
+        if (resizing) {
+            return
+        }
+
         let newTime = timeManager.time
         if (newTime > lastUpdate) {
             prevLastUpdate = lastUpdate
@@ -65,7 +74,7 @@ Loader {
 
             sourceItem: burnInShaderEffect
             live: false
-            recursive: !resizing
+            recursive: true
             hideSource: true
             wrapMode: ShaderEffectSource.ClampToEdge
 
@@ -141,6 +150,9 @@ Loader {
     Timer {
         id: resizeTimer
         interval: 300
-        onTriggered: resizing = false
+        onTriggered: {
+            resizing = false
+            burnInEffect.restartBlurSource()
+        }
     }
 }
