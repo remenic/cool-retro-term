@@ -9,7 +9,7 @@ on the same 6x12 grid, so they stay crisp and match the rest of the font.
 Usage:  pip install fonttools && python3 scripts/patch_terminess_symbols.py
 
 Rewrites app/qml/fonts/terminus/TerminessNerdFontMono-Regular.ttf in place.
-Running it twice is harmless: glyphs that already exist are skipped.
+Running it twice is harmless: glyphs that were already added are skipped.
 Designs for most symbols are borrowed from Cozette (MIT licensed).
 """
 import os
@@ -176,6 +176,20 @@ BITMAPS = {
     ]),
 }
 
+# Same format, but for symbols Terminess does have as smooth vector shapes
+# (Nerd Font additions) that turn lumpy at 12 px. These replace the original.
+REPLACEMENTS = {
+    0x276F: (0, [  # ❯ heavy right-pointing angle quotation mark (Claude Code prompt)
+        ".#....",
+        ".##...",
+        "..##..",
+        "...##.",
+        "..##..",
+        ".##...",
+        ".#....",
+    ]),
+}
+
 # codepoint -> existing glyph that looks the same
 ALIASES = {
     0x23BF: 0x2514,  # ⎿ (Claude Code tool-result connector) -> └
@@ -223,6 +237,17 @@ def main():
         if codepoint in cmap:
             continue
         name = "uni%04X" % codepoint
+        glyph = build_glyph(font, bottom_row, rows)
+        order.append(name)
+        font["glyf"][name] = glyph
+        font["hmtx"][name] = (ADVANCE, glyph.xMin if hasattr(glyph, "xMin") else 0)
+        add_to_cmap(font, codepoint, name)
+        added.append(chr(codepoint))
+
+    for codepoint, (bottom_row, rows) in REPLACEMENTS.items():
+        name = "uni%04X.pixel" % codepoint
+        if name in order:
+            continue
         glyph = build_glyph(font, bottom_row, rows)
         order.append(name)
         font["glyf"][name] = glyph
