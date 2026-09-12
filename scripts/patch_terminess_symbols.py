@@ -9,7 +9,7 @@ on the same 6x12 grid, so they stay crisp and match the rest of the font.
 Usage:  pip install fonttools && python3 scripts/patch_terminess_symbols.py
 
 Rewrites app/qml/fonts/terminus/TerminessNerdFontMono-Regular.ttf in place.
-Running it twice is harmless: glyphs that were already added are skipped.
+Safe to re-run: our glyphs are rebuilt, the font's own glyphs are kept.
 Designs for most symbols are borrowed from Cozette (MIT licensed).
 """
 import os
@@ -25,49 +25,49 @@ ADVANCE = 500               # every Terminess glyph is half an em wide
 # Each bitmap is 6 columns wide; '#' is a filled pixel.
 BITMAPS = {
     0x2722: (0, [  # ✢ four teardrop-spoked asterisk
-        "...#..",
-        "...#..",
-        "...#..",
-        "######",
-        "...#..",
-        "...#..",
-        "...#..",
+        "..#...",
+        "..#...",
+        "..#...",
+        "#####.",
+        "..#...",
+        "..#...",
+        "..#...",
     ]),
     0x2733: (0, [  # ✳ eight spoked asterisk (Claude Code spinner)
-        "...#..",
-        ".#.#.#",
-        "..###.",
-        "######",
-        "..###.",
-        ".#.#.#",
-        "...#..",
+        "..#...",
+        "#.#.#.",
+        ".###..",
+        "#####.",
+        ".###..",
+        "#.#.#.",
+        "..#...",
     ]),
     0x2736: (0, [  # ✶ six pointed black star
-        "...#..",
-        ".#.#.#",
-        ".#####",
-        "..###.",
-        ".#####",
-        ".#.#.#",
-        "...#..",
+        "..#...",
+        ".###..",
+        "#####.",
+        ".###..",
+        "#####.",
+        ".###..",
+        "..#...",
     ]),
     0x273B: (0, [  # ✻ teardrop-spoked asterisk
-        "..#.#.",
-        "...#..",
-        ".#####",
-        "..###.",
-        ".#####",
-        "...#..",
-        "..#.#.",
+        "..#...",
+        "#.#.#.",
+        "#####.",
+        ".###..",
+        "#####.",
+        "#.#.#.",
+        "..#...",
     ]),
     0x273D: (0, [  # ✽ heavy teardrop-spoked pinwheel asterisk
-        ".#.#.#",
-        "..###.",
-        ".#####",
-        "######",
-        ".#####",
-        "..###.",
-        ".#.#.#",
+        "#.#.#.",
+        ".###..",
+        "#####.",
+        "#####.",
+        "#####.",
+        ".###..",
+        "#.#.#.",
     ]),
     0x23FA: (1, [  # ⏺ black circle for record (Claude Code message bullet)
         "..###.",
@@ -233,27 +233,24 @@ def main():
     order = font.getGlyphOrder()
     added = []
 
-    for codepoint, (bottom_row, rows) in BITMAPS.items():
-        if codepoint in cmap:
-            continue
-        name = "uni%04X" % codepoint
+    def install(codepoint, bottom_row, rows):
+        name = "uni%04X.pixel" % codepoint
         glyph = build_glyph(font, bottom_row, rows)
-        order.append(name)
+        if name not in order:
+            order.append(name)
         font["glyf"][name] = glyph
         font["hmtx"][name] = (ADVANCE, glyph.xMin if hasattr(glyph, "xMin") else 0)
         add_to_cmap(font, codepoint, name)
         added.append(chr(codepoint))
 
-    for codepoint, (bottom_row, rows) in REPLACEMENTS.items():
-        name = "uni%04X.pixel" % codepoint
-        if name in order:
+    for codepoint, (bottom_row, rows) in BITMAPS.items():
+        has_own_glyph = codepoint in cmap and not cmap[codepoint].endswith(".pixel")
+        if has_own_glyph:
             continue
-        glyph = build_glyph(font, bottom_row, rows)
-        order.append(name)
-        font["glyf"][name] = glyph
-        font["hmtx"][name] = (ADVANCE, glyph.xMin if hasattr(glyph, "xMin") else 0)
-        add_to_cmap(font, codepoint, name)
-        added.append(chr(codepoint))
+        install(codepoint, bottom_row, rows)
+
+    for codepoint, (bottom_row, rows) in REPLACEMENTS.items():
+        install(codepoint, bottom_row, rows)
 
     for codepoint, target in ALIASES.items():
         if codepoint in cmap or target not in cmap:
