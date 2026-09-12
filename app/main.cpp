@@ -127,7 +127,12 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("defaultCmd", command);
     engine.rootContext()->setContextProperty("defaultCmdArgs", commandArgs);
 
-    engine.rootContext()->setContextProperty("workdir", getNamedArgument(args, "--workdir", QDir::currentPath()));
+    // Started from Finder or the Dock the working directory is "/", which is
+    // never what the user wants. Start in the home directory in that case.
+    QString defaultWorkdir = QDir::currentPath();
+    if (defaultWorkdir == QDir::rootPath())
+        defaultWorkdir = QDir::homePath();
+    engine.rootContext()->setContextProperty("workdir", getNamedArgument(args, "--workdir", defaultWorkdir));
     engine.rootContext()->setContextProperty("fileIO", &fileIO);
 
     // Manage import paths for Linux and OSX.
