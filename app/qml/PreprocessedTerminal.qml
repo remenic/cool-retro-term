@@ -117,6 +117,11 @@ Item{
         fullCursorHeight: true
         blinkingCursor: appSettings.blinkingCursor
 
+        // Ctrl/Cmd+click on a link (plain url or OSC 8 hyperlink).
+        onUrlActivated: function(url) {
+            Qt.openUrlExternally(url)
+        }
+
         colorScheme: "cool-retro-term"
 
         session: QMLTermSession {
@@ -218,7 +223,10 @@ Item{
 
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
         anchors.fill: parent
-        cursorShape: kterminal.terminalUsesMouse ? Qt.ArrowCursor : Qt.IBeamCursor
+        // Hover is needed so the terminal can underline links under the mouse.
+        hoverEnabled: true
+        cursorShape: kterminal.hoveringLink ? Qt.PointingHandCursor
+                   : kterminal.terminalUsesMouse ? Qt.ArrowCursor : Qt.IBeamCursor
         onWheel: function(wheel) {
             if (wheel.modifiers & Qt.ControlModifier) {
                wheel.angleDelta.y > 0 ? zoomIn.trigger() : zoomOut.trigger();
